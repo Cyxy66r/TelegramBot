@@ -10,7 +10,7 @@ from telegram.ext import (
     filters
 )
 
-BOT_TOKEN = "8348615649:AAFY799SOdeKpLwtDTgHKyVdgU3HSxgjbtY"
+BOT_TOKEN = os.getenv("8348615649:AAFY799SOdeKpLwtDTgHKyVdgU3HSxgjbtY")
 DOWNLOAD_DIR = "downloads"
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
@@ -88,7 +88,6 @@ async def menu_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text("Choose what you want 👇", reply_markup=InlineKeyboardMarkup(keyboard))
 
 # ---------------- DOWNLOAD HANDLER ----------------
-# ---------------- DOWNLOAD HANDLER ----------------
 async def download_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -99,14 +98,12 @@ async def download_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.edit_message_text("⏳ Downloading... Please wait")
 
     ydl_opts = {
-        "outtmpl": f"{DOWNLOAD_DIR}/%(title)s.%(ext)s",
-        "quiet": True,
-        "merge_output_format": "mp4",
-
-        # ✅ STEP-1 FIX (VERY IMPORTANT)
-        "ffmpeg_location": "/nix/store",
-
-        # cookies (for Instagram / private videos)
+    "outtmpl": f"{DOWNLOAD_DIR}/%(title)s.%(ext)s",
+    "quiet": True,
+    "merge_output_format": "mp4",
+    "cookiefile": "cookies.txt"
+    }
+    # cookies (for Instagram / private videos)
         "cookiefile": "cookies.txt"
     }
 
