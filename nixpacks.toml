@@ -2,4 +2,4 @@
 nixPkgs = ["ffmpeg", "python311"]
 
 [start]
-cmd = "python teach.py"
+cmd = "python main.py"
