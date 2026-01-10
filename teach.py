@@ -102,12 +102,10 @@ async def download_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     "quiet": True,
     "merge_output_format": "mp4",
     "cookiefile": "cookies.txt"
-    }
-    # cookies (for Instagram / private videos)
-        "cookiefile": "cookies.txt"
+
     }
 
-    try:
+     try:
         # 🎵 AUDIO
         if data.startswith("mp3"):
             bitrate = data.split("_")[1]
