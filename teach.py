@@ -14,7 +14,7 @@ BOT_TOKEN = "8348615649:AAFY799SOdeKpLwtDTgHKyVdgU3HSxgjbtY"
 DOWNLOAD_DIR = "downloads"
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
----------------- START ----------------
+# ---------------- START ----------------
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 await update.message.reply_text(
@@ -24,7 +24,7 @@ await update.message.reply_text(
 parse_mode="Markdown"
 )
 
----------------- LINK HANDLER ----------------
+# ---------------- LINK HANDLER ----------------
 
 async def link_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 url = update.message.text
@@ -41,7 +41,7 @@ await update.message.reply_text(
     reply_markup=InlineKeyboardMarkup(keyboard)  
 )
 
----------------- MENU HANDLER ----------------
+# ---------------- MENU HANDLER ----------------
 
 async def menu_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 query = update.callback_query
@@ -90,7 +90,7 @@ elif query.data == "back_main":
     ]  
     await query.edit_message_text("Choose what you want 👇", reply_markup=InlineKeyboardMarkup(keyboard))
 
----------------- DOWNLOAD HANDLER ----------------
+# ---------------- DOWNLOAD HANDLER ----------------
 
 async def download_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 query = update.callback_query
@@ -139,7 +139,7 @@ try:
 except Exception as e:  
     await query.message.reply_text(f"❌ Error:\n{e}")
 
----------------- MAIN ----------------
+# ---------------- MAIN ----------------
 
 app = ApplicationBuilder().token(BOT_TOKEN).build()
 
