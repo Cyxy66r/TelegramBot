@@ -10,80 +10,125 @@ from telegram.ext import (
     filters
 )
 
-BOT_TOKEN = "8348615649:AAFY799SOdeKpLwtDTgHKyVdgU3HSxgjbtY"
+BOT_TOKEN = "YOUR_BOT_TOKEN"
 DOWNLOAD_DIR = "downloads"
-
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
 # ---------------- START ----------------
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "🎥 *Video Downloader Bot*\n\n"
-        "Send any video link from:\n"
-        "YouTube | Instagram | Facebook | Twitter\n\n"
-        "You will get quality options.",
+        "🎥 *Media Downloader Bot*\n\n"
+        "Send a video link from:\n"
+        "YouTube | Instagram | Facebook | Twitter",
         parse_mode="Markdown"
     )
 
 # ---------------- LINK HANDLER ----------------
 async def link_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     url = update.message.text
+    context.user_data.clear()
     context.user_data["url"] = url
 
     keyboard = [
-        [InlineKeyboardButton("🎵 MP3 (320kbps)", callback_data="mp3")],
-        [
-            InlineKeyboardButton("📹 720p", callback_data="720"),
-            InlineKeyboardButton("📹 1080p", callback_data="1080")
-        ],
-        [
-            InlineKeyboardButton("📹 2K", callback_data="1440"),
-            InlineKeyboardButton("📹 4K", callback_data="2160")
-        ]
+        [InlineKeyboardButton("🎬 Video", callback_data="menu_video")],
+        [InlineKeyboardButton("🎵 Audio", callback_data="menu_audio")]
     ]
 
     await update.message.reply_text(
-        "Select download quality 👇",
+        "Choose what you want 👇",
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
-# ---------------- DOWNLOAD HANDLER ----------------
-async def download_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+# ---------------- MENU HANDLER ----------------
+async def menu_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
-    quality = query.data
-    url = context.user_data.get("url")
+    if query.data == "menu_audio":
+        keyboard = [
+            [InlineKeyboardButton("🎧 MP3 128kbps", callback_data="mp3_128")],
+            [InlineKeyboardButton("🎧 MP3 192kbps", callback_data="mp3_192")],
+            [InlineKeyboardButton("🎧 MP3 320kbps", callback_data="mp3_320")],
+            [InlineKeyboardButton("🔙 Back", callback_data="back_main")]
+        ]
+        await query.edit_message_text("🎵 Select audio quality:", reply_markup=InlineKeyboardMarkup(keyboard))
+
+    elif query.data == "menu_video":
+        url = context.user_data["url"]
+
+        ydl_opts = {"quiet": True}
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+
+        qualities = sorted({f["height"] for f in info["formats"] if f.get("height")})
+
+        buttons = []
+        for q in qualities:
+            emoji = "🎬"
+            if q >= 2160:
+                emoji = "🔥"
+            elif q >= 1440:
+                emoji = "✨"
+            elif q >= 1080:
+                emoji = "⭐"
+            buttons.append([InlineKeyboardButton(f"{emoji} {q}p", callback_data=f"video_{q}")])
+
+        buttons.append([InlineKeyboardButton("🔙 Back", callback_data="back_main")])
+
+        await query.edit_message_text(
+            "🎬 Select video quality:",
+            reply_markup=InlineKeyboardMarkup(buttons)
+        )
+
+    elif query.data == "back_main":
+        keyboard = [
+            [InlineKeyboardButton("🎬 Video", callback_data="menu_video")],
+            [InlineKeyboardButton("🎵 Audio", callback_data="menu_audio")]
+        ]
+        await query.edit_message_text("Choose what you want 👇", reply_markup=InlineKeyboardMarkup(keyboard))
+
+# ---------------- DOWNLOAD HANDLER ----------------
+async def download_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+
+    url = context.user_data["url"]
+    data = query.data
 
     await query.edit_message_text("⏳ Downloading... Please wait")
 
     ydl_opts = {
         "outtmpl": f"{DOWNLOAD_DIR}/%(title)s.%(ext)s",
-        "quiet": True
+        "quiet": True,
+        "merge_output_format": "mp4",
+        "cookiefile": "cookies.txt"
     }
 
-    if quality == "mp3":
-        ydl_opts.update({
-            "format": "bestaudio/best",
-            "postprocessors": [{
-                "key": "FFmpegExtractAudio",
-                "preferredcodec": "mp3",
-                "preferredquality": "320"
-            }]
-        })
-    else:
-        ydl_opts["format"] = f"bestvideo[height<={quality}]+bestaudio/best/best"
-
     try:
+        if data.startswith("mp3"):
+            bitrate = data.split("_")[1]
+            ydl_opts.update({
+                "format": "bestaudio/best",
+                "postprocessors": [{
+                    "key": "FFmpegExtractAudio",
+                    "preferredcodec": "mp3",
+                    "preferredquality": bitrate
+                }]
+            })
+
+        elif data.startswith("video"):
+            height = data.split("_")[1]
+            ydl_opts["format"] = f"bestvideo[height<={height}]+bestaudio/best"
+
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
             file_path = ydl.prepare_filename(info)
 
-        if quality == "mp3":
+        if data.startswith("mp3"):
             file_path = file_path.rsplit(".", 1)[0] + ".mp3"
-            await query.message.reply_audio(audio=open(file_path, "rb"))
+            await query.message.reply_audio(open(file_path, "rb"))
         else:
-            await query.message.reply_video(video=open(file_path, "rb"))
+            await query.message.reply_video(open(file_path, "rb"))
 
         os.remove(file_path)
 
@@ -95,9 +140,8 @@ app = ApplicationBuilder().token(BOT_TOKEN).build()
 
 app.add_handler(CommandHandler("start", start))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, link_handler))
-app.add_handler(CallbackQueryHandler(download_callback))
+app.add_handler(CallbackQueryHandler(menu_handler, pattern="menu_|back_"))
+app.add_handler(CallbackQueryHandler(download_handler, pattern="video_|mp3_"))
 
 print("🤖 Bot running...")
 app.run_polling()
-if __name__ == "__main__":
-    application.run_polling()
