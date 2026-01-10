@@ -98,11 +98,11 @@ async def download_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.edit_message_text("⏳ Downloading... Please wait")
 
  ydl_opts = {
-    "outtmpl": f"{DOWNLOAD_DIR}/%(title)s.%(ext)s",
-    "quiet": True,
-    "merge_output_format": "mp4",
-    "cookiefile": "cookies.txt",
-    "ffmpeg_location": "/nix/store"
+        "outtmpl": f"{DOWNLOAD_DIR}/%(title)s.%(ext)s",
+        "quiet": True,
+        "merge_output_format": "mp4",
+        "cookiefile": "cookies.txt",
+        "ffmpeg_location": "/nix/store"
  }
 
 
