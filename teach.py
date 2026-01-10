@@ -136,7 +136,7 @@ async def download_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.message.reply_text(f"❌ Error:\n{e}")
 
 # ---------------- MAIN ----------------
-app = ApplicationBuilder().token(BOT_TOKEN).build()
+app = ApplicationBuilder().token(8348615649:AAFY799SOdeKpLwtDTgHKyVdgU3HSxgjbtY).build()
 
 app.add_handler(CommandHandler("start", start))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, link_handler))
