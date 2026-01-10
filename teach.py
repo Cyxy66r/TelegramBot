@@ -102,7 +102,7 @@ async def download_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "quiet": True,
         "merge_output_format": "mp4",
         "cookiefile": "cookies.txt",
-        "ffmpeg_location": "/nix/store"
+        
  }
 
 
