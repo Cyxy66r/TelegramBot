@@ -6,4 +6,4 @@ nixPkgs = ["ffmpeg", "python311"]
 cmds = ["pip install -r requirements.txt"]
 
 [start]
-cmd = "python teach.py"
+cmd = "python main.py"
