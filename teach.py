@@ -88,6 +88,7 @@ async def menu_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text("Choose what you want 👇", reply_markup=InlineKeyboardMarkup(keyboard))
 
 # ---------------- DOWNLOAD HANDLER ----------------
+# ---------------- DOWNLOAD HANDLER ----------------
 async def download_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -101,10 +102,16 @@ async def download_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "outtmpl": f"{DOWNLOAD_DIR}/%(title)s.%(ext)s",
         "quiet": True,
         "merge_output_format": "mp4",
+
+        # ✅ STEP-1 FIX (VERY IMPORTANT)
+        "ffmpeg_location": "/nix/store",
+
+        # cookies (for Instagram / private videos)
         "cookiefile": "cookies.txt"
     }
 
     try:
+        # 🎵 AUDIO
         if data.startswith("mp3"):
             bitrate = data.split("_")[1]
             ydl_opts.update({
@@ -116,9 +123,10 @@ async def download_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 }]
             })
 
+        # 🎬 VIDEO
         elif data.startswith("video"):
             height = data.split("_")[1]
-            ydl_opts["format"] = f"bestvideo[height<={height}]+bestaudio/best"
+            ydl_opts["format"] = f"bv*[height<={height}]+ba/b"
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
@@ -134,7 +142,6 @@ async def download_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     except Exception as e:
         await query.message.reply_text(f"❌ Error:\n{e}")
-
 # ---------------- MAIN ----------------
 app = ApplicationBuilder().token(BOT_TOKEN).build()
 
