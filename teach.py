@@ -57,11 +57,12 @@ async def download_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.edit_message_text("⏳ Downloading... Please wait")
 
     ydl_opts = {
-        "outtmpl": f"{DOWNLOAD_DIR}/%(title)s.%(ext)s",
-        "quiet": True,
-        "merge_output_format": "mp4",
-        "cookiefile": "cookies.txt"   # ✅ COOKIES ADDED HERE
-    }
+    "outtmpl": f"{DOWNLOAD_DIR}/%(title)s.%(ext)s",
+    "quiet": True,
+    "merge_output_format": "mp4",
+    "cookiefile": "cookies.txt"
+} 
+    
 
     try:
         if quality == "mp3":
